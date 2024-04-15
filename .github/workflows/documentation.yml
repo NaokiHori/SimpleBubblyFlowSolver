@@ -1,0 +1,49 @@
+name: Documentation
+
+on:
+
+  push:
+    branches:
+      - main
+    paths:
+      - docs/source/**
+
+jobs:
+
+  main:
+    name: Build and deploy documentation
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+        with:
+          repository: "NaokiHori/SimpleBubblyFlowSolver"
+          ref: "main"
+      - name: Build documentation using Sphinx
+        run: |
+          docker run \
+            --rm \
+            --volume ${PWD}:/project \
+            --workdir /project \
+            sphinxdoc/sphinx:latest \
+            sphinx-build "docs/source" "docs/build"
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@main
+      - name: Upload HTML
+        uses: actions/upload-pages-artifact@main
+        with:
+          path: docs/build
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@main
+

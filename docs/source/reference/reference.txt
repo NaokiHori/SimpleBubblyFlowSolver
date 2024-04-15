@@ -1,0 +1,5 @@
+.. |BRACKBILL1992| replace:: Brackbill et al., *J. Comput. Phys.* (**100**), 1992
+.. |FERZIGER2003|  replace:: Ferziger, Int. J. Numer. Meth. Fluids (**41**), 2003
+.. |DODD2014|      replace:: Dodd and Ferrante, *J. Comput. Phys.* (**273**), 2014
+.. |XIE2017|       replace:: Xie and Xiao, *J. Comput. Phys.* (**349**), 2017
+.. |MIRJALILI2021| replace:: Mirjalili and Mani, *J. Comput. Phys.* (**426**), 2021
