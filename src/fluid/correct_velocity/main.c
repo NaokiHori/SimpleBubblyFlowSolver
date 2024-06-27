@@ -20,9 +20,6 @@ int fluid_correct_velocity(
   // compute prefactor gamma dt
   fluid_correct_velocity_ux(domain, dt_old, dt_new, fluid);
   fluid_correct_velocity_uy(domain, dt_old, dt_new, fluid);
-#if NDIMS == 3
-  fluid_correct_velocity_uz(domain, dt_old, dt_new, fluid);
-#endif
   return 0;
 }
 

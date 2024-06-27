@@ -7,9 +7,6 @@
 #include "fileio.h"
 #include "array_macros/fluid/ux.h"
 #include "array_macros/fluid/uy.h"
-#if NDIMS == 3
-#include "array_macros/fluid/uz.h"
-#endif
 #include "array_macros/fluid/p.h"
 #include "array_macros/fluid/den.h"
 #include "array_macros/fluid/visux.h"
@@ -17,20 +14,10 @@
 #include "array_macros/fluid/visuz.h"
 #include "array_macros/fluid/txx.h"
 #include "array_macros/fluid/txy.h"
-#if NDIMS == 3
-#include "array_macros/fluid/txz.h"
-#endif
 #include "array_macros/fluid/tyy.h"
-#if NDIMS == 3
-#include "array_macros/fluid/tyz.h"
-#include "array_macros/fluid/tzz.h"
-#endif
 #include "array_macros/fluid/psi.h"
 #include "array_macros/fluid/srcux.h"
 #include "array_macros/fluid/srcuy.h"
-#if NDIMS == 3
-#include "array_macros/fluid/srcuz.h"
-#endif
 
 /**
  * @brief allocate members
@@ -45,9 +32,6 @@ static int allocate(
   // velocity
   if(0 != array.prepare(domain, UX_NADDS, sizeof(double), &fluid->ux )) return 1;
   if(0 != array.prepare(domain, UY_NADDS, sizeof(double), &fluid->uy )) return 1;
-#if NDIMS == 3
-  if(0 != array.prepare(domain, UZ_NADDS, sizeof(double), &fluid->uz )) return 1;
-#endif
   // pressure and scalar potentials
   if(0 != array.prepare(domain, P_NADDS,   sizeof(double), &fluid->p  )) return 1;
   for(size_t n = 0; n < 2; n++){
@@ -60,27 +44,14 @@ static int allocate(
   // viscosity
   if(0 != array.prepare(domain, VISUX_NADDS, sizeof(double), &fluid->visux)) return 1;
   if(0 != array.prepare(domain, VISUY_NADDS, sizeof(double), &fluid->visuy)) return 1;
-#if NDIMS == 3
-  if(0 != array.prepare(domain, VISUZ_NADDS, sizeof(double), &fluid->visuz)) return 1;
-#endif
   // stress tensor
   if(0 != array.prepare(domain, TXX_NADDS, sizeof(double), &fluid->txx)) return 1;
   if(0 != array.prepare(domain, TXY_NADDS, sizeof(double), &fluid->txy)) return 1;
-#if NDIMS == 3
-  if(0 != array.prepare(domain, TXZ_NADDS, sizeof(double), &fluid->txz)) return 1;
-#endif
   if(0 != array.prepare(domain, TYY_NADDS, sizeof(double), &fluid->tyy)) return 1;
-#if NDIMS == 3
-  if(0 != array.prepare(domain, TYZ_NADDS, sizeof(double), &fluid->tyz)) return 1;
-  if(0 != array.prepare(domain, TZZ_NADDS, sizeof(double), &fluid->tzz)) return 1;
-#endif
   // Runge-Kutta source terms
   for(size_t n = 0; n < 3; n++){
     if(0 != array.prepare(domain, SRCUX_NADDS, sizeof(double), &fluid->srcux[n])) return 1;
     if(0 != array.prepare(domain, SRCUY_NADDS, sizeof(double), &fluid->srcuy[n])) return 1;
-#if NDIMS == 3
-    if(0 != array.prepare(domain, SRCUZ_NADDS, sizeof(double), &fluid->srcuz[n])) return 1;
-#endif
   }
   return 0;
 }
@@ -120,17 +91,11 @@ int fluid_init(
   // load flow fields
   if(0 != array.load(domain, dirname_ic,  "ux", fileio.npy_double, &fluid->    ux)) return 1;
   if(0 != array.load(domain, dirname_ic,  "uy", fileio.npy_double, &fluid->    uy)) return 1;
-#if NDIMS == 3
-  if(0 != array.load(domain, dirname_ic,  "uz", fileio.npy_double, &fluid->    uz)) return 1;
-#endif
   if(0 != array.load(domain, dirname_ic,   "p", fileio.npy_double, &fluid->     p)) return 1;
   if(0 != array.load(domain, dirname_ic, "psi", fileio.npy_double, &fluid->psi[0])) return 1;
   // impose boundary conditions and communicate halo cells
   fluid_update_boundaries_ux (domain, &fluid->    ux);
   fluid_update_boundaries_uy (domain, &fluid->    uy);
-#if NDIMS == 3
-  fluid_update_boundaries_uz (domain, &fluid->    uz);
-#endif
   fluid_update_boundaries_p  (domain, &fluid->     p);
   fluid_update_boundaries_psi(domain, &fluid->psi[0]);
   // compute diffusivities

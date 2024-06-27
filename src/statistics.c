@@ -13,15 +13,9 @@
 #include "config.h"
 #include "array_macros/fluid/ux.h"
 #include "array_macros/fluid/uy.h"
-#if NDIMS == 3
-#include "array_macros/fluid/uz.h"
-#endif
 #include "array_macros/interface/vof.h"
 #include "array_macros/statistics/ux1.h"
 #include "array_macros/statistics/uy1.h"
-#if NDIMS == 3
-#include "array_macros/statistics/uz1.h"
-#endif
 #include "array_macros/statistics/vof1.h"
 
 // parameters to specify directory name
@@ -40,9 +34,6 @@ static double g_next = 0.;
 static size_t g_num = 0;
 static array_t g_ux1 = {0};
 static array_t g_uy1 = {0};
-#if NDIMS == 3
-static array_t g_uz1 = {0};
-#endif
 static array_t g_vof1 = {0};
 
 /**
@@ -74,9 +65,6 @@ static int init(
   // prepare arrays
   if(0 != array.prepare(domain, UX1_NADDS,  sizeof(double), &g_ux1))  return 1;
   if(0 != array.prepare(domain, UY1_NADDS,  sizeof(double), &g_uy1))  return 1;
-#if NDIMS == 3
-  if(0 != array.prepare(domain, UZ1_NADDS,  sizeof(double), &g_uz1))  return 1;
-#endif
   if(0 != array.prepare(domain, VOF1_NADDS, sizeof(double), &g_vof1)) return 1;
   // report
   const int root = 0;
@@ -114,25 +102,12 @@ static void collect_mean_ux(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
-  const int ksize = domain->mysizes[2];
-#endif
   double * restrict ux1 = g_ux1.data;
-#if NDIMS == 2
   for(int j = 1; j <= jsize; j++){
     for(int i = 1; i <= isize + 1; i++){
       UX1(i, j) += UX(i, j);
     }
   }
-#else
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 1; i <= isize + 1; i++){
-        UX1(i, j, k) += UX(i, j, k);
-      }
-    }
-  }
-#endif
 }
 
 /**
@@ -146,50 +121,13 @@ static void collect_mean_uy(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
-  const int ksize = domain->mysizes[2];
-#endif
   double * restrict uy1 = g_uy1.data;
-#if NDIMS == 2
   for(int j = 1; j <= jsize; j++){
     for(int i = 0; i <= isize + 1; i++){
       UY1(i, j) += UY(i, j);
     }
   }
-#else
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 0; i <= isize + 1; i++){
-        UY1(i, j, k) += UY(i, j, k);
-      }
-    }
-  }
-#endif
 }
-
-#if NDIMS == 3
-/**
- * @brief compute uz^1 and add results to the array
- * @param[in] domain : information related to MPI domain decomposition
- * @param[in] uz     : z velocity
- */
-static void collect_mean_uz(
-    const domain_t * domain,
-    const double * restrict uz
-){
-  const int isize = domain->mysizes[0];
-  const int jsize = domain->mysizes[1];
-  const int ksize = domain->mysizes[2];
-  double * restrict uz1 = g_uz1.data;
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 0; i <= isize + 1; i++){
-        UZ1(i, j, k) += UZ(i, j, k);
-      }
-    }
-  }
-}
-#endif
 
 static void collect_mean_vof(
     const domain_t * domain,
@@ -197,25 +135,12 @@ static void collect_mean_vof(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
-  const int ksize = domain->mysizes[2];
-#endif
   double * restrict vof1 = g_vof1.data;
-#if NDIMS == 2
   for(int j = 1; j <= jsize; j++){
     for(int i = 0; i <= isize + 1; i++){
       VOF1(i, j) += VOF(i, j);
     }
   }
-#else
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 0; i <= isize + 1; i++){
-        VOF1(i, j, k) += VOF(i, j, k);
-      }
-    }
-  }
-#endif
 }
 
 /**
@@ -232,9 +157,6 @@ static int collect(
   // collect temporally-averaged quantities
   collect_mean_ux(domain, fluid->ux.data);
   collect_mean_uy(domain, fluid->uy.data);
-#if NDIMS == 3
-  collect_mean_uz(domain, fluid->uz.data);
-#endif
   collect_mean_vof(domain, interface->vof.data);
   // increment number of samples
   g_num += 1;
@@ -290,9 +212,6 @@ static int output(
   const variable_t variables[] = {
     {.name = "ux1",  .array = &g_ux1},
     {.name = "uy1",  .array = &g_uy1},
-#if NDIMS == 3
-    {.name = "uz1",  .array = &g_uz1},
-#endif
     {.name = "vof1", .array = &g_vof1},
   };
   for(size_t index = 0; index < sizeof(variables) / sizeof(variable_t); index++){

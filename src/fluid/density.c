@@ -14,15 +14,11 @@ int fluid_compute_density(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
-  const int ksize = domain->mysizes[2];
-#endif
   double * restrict den = fluid->den[index].data;
   const double * restrict vof = interface->vof.data;
   const double denr = fluid->denr;
   const double min = fmin(1., denr);
   const double max = fmax(1., denr);
-#if NDIMS == 2
   for(int j = 0; j <= jsize + 1; j++){
     for(int i = 0; i <= isize + 1; i++){
       double * lden = &DEN(i, j);
@@ -31,18 +27,6 @@ int fluid_compute_density(
       *lden = fmin(max, *lden);
     }
   }
-#else
-  for(int k = 0; k <= ksize + 1; k++){
-    for(int j = 0; j <= jsize + 1; j++){
-      for(int i = 0; i <= isize + 1; i++){
-        double * lden = &DEN(i, j, k);
-        *lden = 1. + (denr - 1.) * VOF(i, j, k);
-        *lden = fmax(min, *lden);
-        *lden = fmin(max, *lden);
-      }
-    }
-  }
-#endif
   return 0;
 }
 

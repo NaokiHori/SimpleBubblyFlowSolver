@@ -6,17 +6,11 @@
 #include "array_macros/interface/vof.h"
 #include "array_macros/interface/ifrcx.h"
 #include "array_macros/interface/ifrcy.h"
-#if NDIMS == 3
-#include "array_macros/interface/ifrcz.h"
-#endif
 #include "array_macros/interface/dvof.h"
 #include "array_macros/interface/normal.h"
 #include "array_macros/interface/curv.h"
 #include "array_macros/interface/fluxx.h"
 #include "array_macros/interface/fluxy.h"
-#if NDIMS == 3
-#include "array_macros/interface/fluxz.h"
-#endif
 #include "array_macros/interface/src.h"
 
 /**
@@ -32,17 +26,11 @@ static int allocate(
   if(0 != array.prepare(domain, VOF_NADDS, sizeof(double), &interface->vof)) return 1;
   if(0 != array.prepare(domain, IFRCX_NADDS, sizeof(double), &interface->ifrcx)) return 1;
   if(0 != array.prepare(domain, IFRCY_NADDS, sizeof(double), &interface->ifrcy)) return 1;
-#if NDIMS == 3
-  if(0 != array.prepare(domain, IFRCZ_NADDS, sizeof(double), &interface->ifrcz)) return 1;
-#endif
   if(0 != array.prepare(domain, DVOF_NADDS, sizeof(vector_t), &interface->dvof)) return 1;
   if(0 != array.prepare(domain, NORMAL_NADDS, sizeof(normal_t), &interface->normal)) return 1;
   if(0 != array.prepare(domain, CURV_NADDS, sizeof(double), &interface->curv)) return 1;
   if(0 != array.prepare(domain, FLUXX_NADDS, sizeof(double), &interface->fluxx)) return 1;
   if(0 != array.prepare(domain, FLUXY_NADDS, sizeof(double), &interface->fluxy)) return 1;
-#if NDIMS == 3
-  if(0 != array.prepare(domain, FLUXZ_NADDS, sizeof(double), &interface->fluxz)) return 1;
-#endif
   for(size_t n = 0; n < 2; n++){
     if(0 != array.prepare(domain, SRC_NADDS, sizeof(double), &interface->src[n])) return 1;
   }
