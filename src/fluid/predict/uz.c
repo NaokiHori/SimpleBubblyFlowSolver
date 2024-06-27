@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include "memory.h"
 #include "runge_kutta.h"
 #include "domain.h"
@@ -43,7 +42,7 @@ static int advection_x(
   const double * restrict jdxf = domain->jdxf;
   const double * restrict jdxc = domain->jdxc;
   BEGIN
-    // uz is advected in x | 17
+    // uz is advected in x
     const double hx_xm = HXXF(i  );
     const double hx_xp = HXXF(i+1);
     const double jd_xm = JDXF(i  );
@@ -77,7 +76,7 @@ static int advection_y(
   const double hy = domain->hy;
   const double * restrict jdxc = domain->jdxc;
   BEGIN
-    // uz is advected in y | 13
+    // uz is advected in y
     const double jd = JDXC(i  );
     const double muy_ym = + 0.5 * jd / hy * FLUXY(i  , j  , k-1)
                           + 0.5 * jd / hy * FLUXY(i  , j  , k  );
@@ -107,7 +106,7 @@ static int advection_z(
   const double hz = domain->hz;
   const double * restrict jdxc = domain->jdxc;
   BEGIN
-    // uz is advected in z | 13
+    // uz is advected in z
     const double jd = JDXC(i  );
     const double muz_zm = + 0.5 * jd / hz * FLUXZ(i  , j  , k-1)
                           + 0.5 * jd / hz * FLUXZ(i  , j  , k  );
@@ -138,7 +137,7 @@ static int diffusion_x(
   const double * restrict jdxf = domain->jdxf;
   const double * restrict jdxc = domain->jdxc;
   BEGIN
-    // uz is diffused in x | 11
+    // uz is diffused in x
     const double hx_xm = HXXF(i  );
     const double hx_xp = HXXF(i+1);
     const double jd_xm = JDXF(i  );
@@ -166,7 +165,7 @@ static int diffusion_y(
   const double hy = domain->hy;
   const double * restrict jdxc = domain->jdxc;
   BEGIN
-    // uz is diffused in y | 7
+    // uz is diffused in y
     const double jd = JDXC(i  );
     const double tyz_ym = TYZ(i  , j  , k  );
     const double tyz_yp = TYZ(i  , j+1, k  );
@@ -190,7 +189,7 @@ static int diffusion_z(
   const double hz = domain->hz;
   const double * restrict jdxc = domain->jdxc;
   BEGIN
-    // uz is diffused in z | 7
+    // uz is diffused in z
     const double jd = JDXC(i  );
     const double tzz_zm = TZZ(i  , j  , k-1);
     const double tzz_zp = TZZ(i  , j  , k  );
@@ -212,7 +211,7 @@ static int pressure(
   const int ksize = domain->mysizes[2];
   const double hz = domain->hz;
   BEGIN
-    // pressure-gradient contribution | 4
+    // pressure-gradient contribution
     src[cnt] -= 1. / hz * (
         - P(i  , j  , k-1)
         + P(i  , j  , k  )
@@ -318,4 +317,3 @@ int predict_uz(
   fluid_update_boundaries_uz(domain, &fluid->uz);
   return 0;
 }
-#endif

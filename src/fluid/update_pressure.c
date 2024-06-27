@@ -10,20 +10,10 @@ static inline int add_explicit(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict psi = fluid->psi[1].data;
   double * restrict p = fluid->p.data;
-#if NDIMS == 2
-  // explicit contribution | 5
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
-      P(i, j) += PSI(i, j);
-    }
-  }
-#else
-  // explicit contribution | 7
+  // explicit contribution
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -31,7 +21,6 @@ static inline int add_explicit(
       }
     }
   }
-#endif
   return 0;
 }
 
@@ -39,7 +28,7 @@ static int update_scalar_potential(
     array_t * psi0,
     array_t * psi1
 ){
-  // update psi | 3
+  // update psi
   double * tmp = psi0->data;
   psi0->data = psi1->data;
   psi1->data = tmp;

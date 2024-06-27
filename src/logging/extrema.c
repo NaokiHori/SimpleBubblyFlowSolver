@@ -5,9 +5,7 @@
 #include "fileio.h"
 #include "array_macros/fluid/ux.h"
 #include "array_macros/fluid/uy.h"
-#if NDIMS == 3
 #include "array_macros/fluid/uz.h"
-#endif
 #include "internal.h"
 
 int logging_check_extrema(
@@ -23,23 +21,12 @@ int logging_check_extrema(
   sdecomp.get_comm_cart(domain->info, &comm_cart);
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict ux = fluid->ux.data;
   const double * restrict uy = fluid->uy.data;
-#if NDIMS == 3
   const double * restrict uz = fluid->uz.data;
-#endif
   double extrema[NDIMS] = {0.};
   // compute total x-momentum
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 2; i <= isize; i++){
-      extrema[0] = fmax(extrema[0], fabs(UX(i, j)));
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 2; i <= isize; i++){
@@ -47,15 +34,7 @@ int logging_check_extrema(
       }
     }
   }
-#endif
   // compute total y-momentum
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
-      extrema[1] = fmax(extrema[1], fabs(UY(i, j)));
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -63,8 +42,6 @@ int logging_check_extrema(
       }
     }
   }
-#endif
-#if NDIMS == 3
   // compute total z-momentum
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
@@ -73,7 +50,6 @@ int logging_check_extrema(
       }
     }
   }
-#endif
   const void * sendbuf = root == myrank ? MPI_IN_PLACE : extrema;
   void * recvbuf = extrema;
   MPI_Reduce(sendbuf, recvbuf, NDIMS, MPI_DOUBLE, MPI_MAX, root, comm_cart);

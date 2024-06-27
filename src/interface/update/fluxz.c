@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include <mpi.h>
 #include "array.h"
 #include "domain.h"
@@ -85,4 +84,3 @@ int compute_flux_z(
   update_boundaries(domain, &interface->fluxz);
   return 0;
 }
-#endif

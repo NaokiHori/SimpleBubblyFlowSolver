@@ -78,12 +78,10 @@ extern int fluid_update_boundaries_uy(
     array_t * array
 );
 
-#if NDIMS == 3
 extern int fluid_update_boundaries_uz(
     const domain_t * domain,
     array_t * array
 );
-#endif
 
 extern int fluid_update_boundaries_p(
     const domain_t * domain,

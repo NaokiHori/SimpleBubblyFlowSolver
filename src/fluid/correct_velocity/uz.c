@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include "domain.h"
 #include "fluid.h"
 #include "fluid_solver.h"
@@ -29,7 +28,7 @@ int fluid_correct_velocity_uz(
   const double refden = fluid->refden;
   {
     const double * restrict psi = fluid->psi[1].data;
-    // new scalar potential contribution | 12
+    // new scalar potential contribution
     for(int k = 1; k <= ksize; k++){
       for(int j = 1; j <= jsize; j++){
         for(int i = 1; i <= isize; i++){
@@ -47,7 +46,7 @@ int fluid_correct_velocity_uz(
     const double * restrict psi = fluid->psi[0].data;
     const double * restrict den = fluid->den[1].data;
     const double coef = -1. / dt_new * dt_old;
-    // old scalar potential contribution | 14
+    // old scalar potential contribution
     for(int k = 1; k <= ksize; k++){
       for(int j = 1; j <= jsize; j++){
         for(int i = 1; i <= isize; i++){
@@ -67,4 +66,3 @@ int fluid_correct_velocity_uz(
   fluid_update_boundaries_uz(domain, &fluid->uz);
   return 0;
 }
-#endif

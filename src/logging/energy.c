@@ -8,9 +8,7 @@
 #include "array_macros/fluid/den.h"
 #include "array_macros/fluid/ux.h"
 #include "array_macros/fluid/uy.h"
-#if NDIMS == 3
 #include "array_macros/fluid/uz.h"
-#endif
 #include "internal.h"
 
 /**
@@ -34,30 +32,16 @@ int logging_check_energy(
   sdecomp.get_comm_cart(domain->info, &comm_cart);
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict jdxf = domain->jdxf;
   const double * restrict jdxc = domain->jdxc;
   const double * restrict den = fluid->den[1].data;
   const double * restrict ux = fluid->ux.data;
   const double * restrict uy = fluid->uy.data;
-#if NDIMS == 3
   const double * restrict uz = fluid->uz.data;
-#endif
   // squared velocity in each dimension
   double quantities[NDIMS] = {0.};
   // compute quadratic quantity in x direction
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 2; i <= isize; i++){
-      const double ds = JDXF(i  );
-      const double lden = 0.5 * DEN(i-1, j  ) + 0.5 * DEN(i  , j  );
-      const double lvel = UX(i, j);
-      quantities[0] += 0.5 * lden * pow(lvel, 2.) * ds;
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 2; i <= isize; i++){
@@ -68,18 +52,7 @@ int logging_check_energy(
       }
     }
   }
-#endif
   // compute quadratic quantity in y direction
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
-      const double ds = JDXC(i  );
-      const double lden = 0.5 * DEN(i  , j-1) + 0.5 * DEN(i  , j  );
-      const double lvel = UY(i, j);
-      quantities[1] += 0.5 * lden * pow(lvel, 2.) * ds;
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -90,8 +63,6 @@ int logging_check_energy(
       }
     }
   }
-#endif
-#if NDIMS == 3
   // compute quadratic quantity in z direction
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
@@ -103,7 +74,6 @@ int logging_check_energy(
       }
     }
   }
-#endif
   const void * sendbuf = root == myrank ? MPI_IN_PLACE : quantities;
   void * recvbuf = quantities;
   MPI_Reduce(sendbuf, recvbuf, NDIMS, MPI_DOUBLE, MPI_SUM, root, comm_cart);

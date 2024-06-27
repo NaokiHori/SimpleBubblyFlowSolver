@@ -13,11 +13,9 @@
 extern const double param_uy_xm;
 // positive-x-wall velocity in y direction
 extern const double param_uy_xp;
-#if NDIMS == 3
 // negative-x-wall velocity in z direction
 extern const double param_uz_xm;
 // positive-x-wall velocity in z direction
 extern const double param_uz_xp;
-#endif
 
 #endif // PARAM_H

@@ -20,12 +20,10 @@ extern int compute_flux_y(
     interface_t * interface
 );
 
-#if NDIMS == 3
 extern int compute_flux_z(
     const domain_t * domain,
     const fluid_t * fluid,
     interface_t * interface
 );
-#endif
 
 #endif // INTERFACE_INTERNAL_UPDATE_H
