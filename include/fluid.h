@@ -27,32 +27,16 @@
 typedef struct {
   array_t ux;
   array_t uy;
-#if NDIMS == 3
-  array_t uz;
-#endif
   array_t p;
   array_t psi[2];
   array_t den[2];
   array_t visux;
   array_t visuy;
-#if NDIMS == 3
-  array_t visuz;
-#endif
   array_t txx;
   array_t txy;
-#if NDIMS == 3
-  array_t txz;
-#endif
   array_t tyy;
-#if NDIMS == 3
-  array_t tyz;
-  array_t tzz;
-#endif
   array_t srcux[3];
   array_t srcuy[3];
-#if NDIMS == 3
-  array_t srcuz[3];
-#endif
   double Re;
   double Fr;
   double denr;

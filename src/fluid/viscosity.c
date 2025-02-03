@@ -8,9 +8,6 @@
 #include "interface.h"
 #include "array_macros/fluid/visux.h"
 #include "array_macros/fluid/visuy.h"
-#if NDIMS == 3
-#include "array_macros/fluid/visuz.h"
-#endif
 #include "array_macros/interface/vof.h"
 
 static inline double get(
@@ -35,12 +32,8 @@ static int compute_x(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
-  const int ksize = domain->mysizes[2];
-#endif
   const double * restrict vof = arr_vof->data;
   double * restrict visux = arr_visux->data;
-#if NDIMS == 2
   for(int j = 1; j <= jsize; j++){
     VISUX(1, j) = get(
         visr, min, max,
@@ -58,41 +51,12 @@ static int compute_x(
         VOF(isize + 1, j)
     );
   }
-#else
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      VISUX(1, j, k) = get(
-          visr, min, max,
-          VOF(0, j, k)
-      );
-      for(int i = 2; i <= isize; i++){
-        VISUX(i, j, k) = get(
-            visr, min, max,
-            + 0.5 * VOF(i-1, j  , k  )
-            + 0.5 * VOF(i  , j  , k  )
-        );
-      }
-      VISUX(isize + 1, j, k) = get(
-          visr, min, max,
-          VOF(isize + 1, j, k)
-      );
-    }
-  }
-#endif
   static MPI_Datatype dtypes[NDIMS - 1] = {
     MPI_DOUBLE,
-#if NDIMS == 3
-    MPI_DOUBLE,
-#endif
   };
   if(0 != halo_communicate_in_y(domain, dtypes + 0, arr_visux)){
     return 1;
   }
-#if NDIMS == 3
-  if(0 != halo_communicate_in_z(domain, dtypes + 1, arr_visux)){
-    return 1;
-  }
-#endif
   return 0;
 }
 
@@ -106,12 +70,8 @@ static int compute_y(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
-  const int ksize = domain->mysizes[2];
-#endif
   const double * restrict vof = arr_vof->data;
   double * restrict visuy = arr_visuy->data;
-#if NDIMS == 2
   for(int j = 1; j <= jsize; j++){
     for(int i = 0; i <= isize + 1; i++){
       VISUY(i, j) = get(
@@ -121,74 +81,14 @@ static int compute_y(
       );
     }
   }
-#else
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 0; i <= isize + 1; i++){
-        VISUY(i, j, k) = get(
-            visr, min, max,
-            + 0.5 * VOF(i  , j-1, k  )
-            + 0.5 * VOF(i  , j  , k  )
-        );
-      }
-    }
-  }
-#endif
   static MPI_Datatype dtypes[NDIMS - 1] = {
     MPI_DOUBLE,
-#if NDIMS == 3
-    MPI_DOUBLE,
-#endif
   };
   if(0 != halo_communicate_in_y(domain, dtypes + 0, arr_visuy)){
     return 1;
   }
-#if NDIMS == 3
-  if(0 != halo_communicate_in_z(domain, dtypes + 1, arr_visuy)){
-    return 1;
-  }
-#endif
   return 0;
 }
-
-#if NDIMS == 3
-static int compute_z(
-    const domain_t * domain,
-    const array_t * restrict arr_vof,
-    const double visr,
-    const double min,
-    const double max,
-    array_t * restrict arr_visuz
-){
-  const int isize = domain->mysizes[0];
-  const int jsize = domain->mysizes[1];
-  const int ksize = domain->mysizes[2];
-  const double * restrict vof = arr_vof->data;
-  double * restrict visuz = arr_visuz->data;
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 0; i <= isize + 1; i++){
-        VISUZ(i, j, k) = get(
-            visr, min, max,
-            + 0.5 * VOF(i  , j  , k-1)
-            + 0.5 * VOF(i  , j  , k  )
-        );
-      }
-    }
-  }
-  static MPI_Datatype dtypes[NDIMS - 1] = {
-    MPI_DOUBLE,
-    MPI_DOUBLE,
-  };
-  if(0 != halo_communicate_in_y(domain, dtypes + 0, arr_visuz)){
-    return 1;
-  }
-  if(0 != halo_communicate_in_z(domain, dtypes + 1, arr_visuz)){
-    return 1;
-  }
-  return 0;
-}
-#endif
 
 int fluid_compute_viscosity(
     const domain_t * domain,
@@ -204,11 +104,6 @@ int fluid_compute_viscosity(
   if(0 != compute_y(domain, &interface->vof, visr, min, max, &fluid->visuy)){
     return 1;
   }
-#if NDIMS == 3
-  if(0 != compute_z(domain, &interface->vof, visr, min, max, &fluid->visuz)){
-    return 1;
-  }
-#endif
   return 0;
 }
 
