@@ -15,24 +15,12 @@
 #include "array_macros/fluid/den.h"
 #include "array_macros/fluid/txx.h"
 #include "array_macros/fluid/txy.h"
-#if NDIMS == 3
 #include "array_macros/fluid/txz.h"
-#endif
 #include "array_macros/interface/fluxx.h"
 #include "array_macros/interface/fluxy.h"
-#if NDIMS == 3
 #include "array_macros/interface/fluxz.h"
-#endif
 #include "array_macros/interface/ifrcx.h"
 
-#if NDIMS == 2
-#define BEGIN \
-  for(int cnt = 0, j = 1; j <= jsize; j++){ \
-    for(int i = 2; i <= isize; i++, cnt++){
-#define END \
-    } \
-  }
-#else
 #define BEGIN \
   for(int cnt = 0, k = 1; k <= ksize; k++){ \
     for(int j = 1; j <= jsize; j++){ \
@@ -41,7 +29,6 @@
       } \
     } \
   }
-#endif
 
 static int advection_x(
     const domain_t * domain,
@@ -51,36 +38,11 @@ static int advection_x(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict hxxf = domain->hxxf;
   const double * restrict jdxf = domain->jdxf;
-#if NDIMS == 2
   BEGIN
-    // ux is advected in x | 18
-    const double hx_xm = HXXF(i-1);
-    const double hx_x0 = HXXF(i  );
-    const double hx_xp = HXXF(i+1);
-    const double jd_xm = JDXF(i-1);
-    const double jd_x0 = JDXF(i  );
-    const double jd_xp = JDXF(i+1);
-    const double mux_xm = + 0.5 * jd_xm / hx_xm * FLUXX(i-1, j  )
-                          + 0.5 * jd_x0 / hx_x0 * FLUXX(i  , j  );
-    const double mux_xp = + 0.5 * jd_x0 / hx_x0 * FLUXX(i  , j  )
-                          + 0.5 * jd_xp / hx_xp * FLUXX(i+1, j  );
-    const double ux_xm = + 0.5 * UX(i-1, j  )
-                         + 0.5 * UX(i  , j  );
-    const double ux_xp = + 0.5 * UX(i  , j  )
-                         + 0.5 * UX(i+1, j  );
-    src[cnt] -= 1. / jd_x0 * (
-        - mux_xm * ux_xm
-        + mux_xp * ux_xp
-    );
-  END
-#else
-  BEGIN
-    // ux is advected in x | 18
+    // ux is advected in x
     const double hx_xm = HXXF(i-1);
     const double hx_x0 = HXXF(i  );
     const double hx_xp = HXXF(i+1);
@@ -100,7 +62,6 @@ static int advection_x(
         + mux_xp * ux_xp
     );
   END
-#endif
   return 0;
 }
 
@@ -112,34 +73,12 @@ static int advection_y(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict jdxf = domain->jdxf;
   const double * restrict jdxc = domain->jdxc;
   const double hy = domain->hy;
-#if NDIMS == 2
   BEGIN
-    // ux is advected in y | 15
-    const double jd_xm = JDXC(i-1);
-    const double jd_x0 = JDXF(i  );
-    const double jd_xp = JDXC(i  );
-    const double muy_ym = + 0.5 * jd_xm / hy * FLUXY(i-1, j  )
-                          + 0.5 * jd_xp / hy * FLUXY(i  , j  );
-    const double muy_yp = + 0.5 * jd_xm / hy * FLUXY(i-1, j+1)
-                          + 0.5 * jd_xp / hy * FLUXY(i  , j+1);
-    const double ux_ym = + 0.5 * UX(i  , j-1)
-                         + 0.5 * UX(i  , j  );
-    const double ux_yp = + 0.5 * UX(i  , j  )
-                         + 0.5 * UX(i  , j+1);
-    src[cnt] -= 1. / jd_x0 * (
-        - muy_ym * ux_ym
-        + muy_yp * ux_yp
-    );
-  END
-#else
-  BEGIN
-    // ux is advected in y | 15
+    // ux is advected in y
     const double jd_xm = JDXC(i-1);
     const double jd_x0 = JDXF(i  );
     const double jd_xp = JDXC(i  );
@@ -156,11 +95,9 @@ static int advection_y(
         + muy_yp * ux_yp
     );
   END
-#endif
   return 0;
 }
 
-#if NDIMS == 3
 static int advection_z(
     const domain_t * domain,
     const double * restrict ux,
@@ -174,7 +111,7 @@ static int advection_z(
   const double * restrict jdxc = domain->jdxc;
   const double hz = domain->hz;
   BEGIN
-    // ux is advected in z | 15
+    // ux is advected in z
     const double jd_xm = JDXC(i-1);
     const double jd_x0 = JDXF(i  );
     const double jd_xp = JDXC(i  );
@@ -193,7 +130,6 @@ static int advection_z(
   END
   return 0;
 }
-#endif
 
 static int diffusion_x(
     const domain_t * domain,
@@ -203,30 +139,12 @@ static int diffusion_x(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict hxxc = domain->hxxc;
   const double * restrict jdxf = domain->jdxf;
   const double * restrict jdxc = domain->jdxc;
-#if NDIMS == 2
   BEGIN
-    // ux is diffused in x | 11
-    const double hx_xm = HXXC(i-1);
-    const double hx_xp = HXXC(i  );
-    const double jd_xm = JDXC(i-1);
-    const double jd_x0 = JDXF(i  );
-    const double jd_xp = JDXC(i  );
-    const double txx_xm = TXX(i-1, j  );
-    const double txx_xp = TXX(i  , j  );
-    src[cnt] += diffusivity / jd_x0 * (
-        - jd_xm / hx_xm * txx_xm
-        + jd_xp / hx_xp * txx_xp
-    );
-  END
-#else
-  BEGIN
-    // ux is diffused in x | 11
+    // ux is diffused in x
     const double hx_xm = HXXC(i-1);
     const double hx_xp = HXXC(i  );
     const double jd_xm = JDXC(i-1);
@@ -239,7 +157,6 @@ static int diffusion_x(
         + jd_xp / hx_xp * txx_xp
     );
   END
-#endif
   return 0;
 }
 
@@ -251,25 +168,11 @@ static int diffusion_y(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double hy = domain->hy;
   const double * restrict jdxf = domain->jdxf;
-#if NDIMS == 2
   BEGIN
-    // ux is diffused in y | 7
-    const double jd = JDXF(i  );
-    const double txy_ym = TXY(i  , j  );
-    const double txy_yp = TXY(i  , j+1);
-    src[cnt] += diffusivity / jd * (
-        - jd / hy * txy_ym
-        + jd / hy * txy_yp
-    );
-  END
-#else
-  BEGIN
-    // ux is diffused in y | 7
+    // ux is diffused in y
     const double jd = JDXF(i  );
     const double txy_ym = TXY(i  , j  , k  );
     const double txy_yp = TXY(i  , j+1, k  );
@@ -278,11 +181,9 @@ static int diffusion_y(
         + jd / hy * txy_yp
     );
   END
-#endif
   return 0;
 }
 
-#if NDIMS == 3
 static int diffusion_z(
     const domain_t * domain,
     const double diffusivity,
@@ -295,7 +196,7 @@ static int diffusion_z(
   const double hz = domain->hz;
   const double * restrict jdxf = domain->jdxf;
   BEGIN
-    // ux is diffused in z | 7
+    // ux is diffused in z
     const double jd = JDXF(i  );
     const double txz_zm = TXZ(i  , j  , k  );
     const double txz_zp = TXZ(i  , j  , k+1);
@@ -306,7 +207,6 @@ static int diffusion_z(
   END
   return 0;
 }
-#endif
 
 static int pressure(
     const domain_t * domain,
@@ -315,27 +215,15 @@ static int pressure(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict hxxf = domain->hxxf;
-#if NDIMS == 2
   BEGIN
-    // pressure-gradient contribution | 4
-    src[cnt] -= 1. / HXXF(i  ) * (
-        - P(i-1, j  )
-        + P(i  , j  )
-    );
-  END
-#else
-  BEGIN
-    // pressure-gradient contribution | 4
+    // pressure-gradient contribution
     src[cnt] -= 1. / HXXF(i  ) * (
         - P(i-1, j  , k  )
         + P(i  , j  , k  )
     );
   END
-#endif
   return 0;
 }
 
@@ -346,18 +234,10 @@ static int surface(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
-#if NDIMS == 2
-  BEGIN
-    src[cnt] += IFRCX(i, j);
-  END
-#else
   BEGIN
     src[cnt] += IFRCX(i, j, k);
   END
-#endif
   return 0;
 }
 
@@ -369,24 +249,13 @@ static int gravity(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
-#if NDIMS == 2
-  BEGIN
-    src[cnt] += g * (
-        + 0.5 * DEN(i-1, j  )
-        + 0.5 * DEN(i  , j  )
-    );
-  END
-#else
   BEGIN
     src[cnt] += g * (
         + 0.5 * DEN(i-1, j  , k  )
         + 0.5 * DEN(i  , j  , k  )
     );
   END
-#endif
   return 0;
 }
 
@@ -405,14 +274,10 @@ int compute_rhs_ux(
   const double * restrict   p = fluid->  p.data;
   const double * restrict txx = fluid->txx.data;
   const double * restrict txy = fluid->txy.data;
-#if NDIMS == 3
   const double * restrict txz = fluid->txz.data;
-#endif
   const double * restrict fluxx = interface->fluxx.data;
   const double * restrict fluxy = interface->fluxy.data;
-#if NDIMS == 3
   const double * restrict fluxz = interface->fluxz.data;
-#endif
   double * restrict srca = fluid->srcux[rk_a].data;
   double * restrict srcg = fluid->srcux[rk_g].data;
   const double diffusivity = 1. / fluid->Re;
@@ -420,15 +285,11 @@ int compute_rhs_ux(
   // advective contributions
   advection_x(domain, ux, fluxx, srca);
   advection_y(domain, ux, fluxy, srca);
-#if NDIMS == 3
   advection_z(domain, ux, fluxz, srca);
-#endif
   // diffusive contributions
   diffusion_x(domain, diffusivity, txx, srca);
   diffusion_y(domain, diffusivity, txy, srca);
-#if NDIMS == 3
   diffusion_z(domain, diffusivity, txz, srca);
-#endif
   // pressure-gradient contribution
   pressure(domain, p, srcg);
   surface(domain, interface->ifrcx.data, srca);
@@ -452,9 +313,7 @@ int predict_ux(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double coef_a = rkcoefs[rkstep][rk_a];
   const double coef_b = rkcoefs[rkstep][rk_b];
   const double coef_g = rkcoefs[rkstep][rk_g];
@@ -464,17 +323,6 @@ int predict_ux(
   double * restrict ux = fluid->ux.data;
   {
     const double * restrict den = fluid->den[0].data;
-#if NDIMS == 2
-    BEGIN
-      const double lden = + 0.5 * DEN(i-1, j  )
-                          + 0.5 * DEN(i  , j  );
-      UX(i, j) =
-        + lden * UX(i, j)
-        + coef_a * dt * srcuxa[cnt]
-        + coef_b * dt * srcuxb[cnt]
-        + coef_g * dt * srcuxg[cnt];
-    END
-#else
     BEGIN
       const double lden = + 0.5 * DEN(i-1, j  , k  )
                           + 0.5 * DEN(i  , j  , k  );
@@ -484,23 +332,14 @@ int predict_ux(
         + coef_b * dt * srcuxb[cnt]
         + coef_g * dt * srcuxg[cnt];
     END
-#endif
   }
   {
     const double * restrict den = fluid->den[1].data;
-#if NDIMS == 2
-    BEGIN
-      const double lden = + 0.5 * DEN(i-1, j  )
-                          + 0.5 * DEN(i  , j  );
-      UX(i, j) /= lden;
-    END
-#else
     BEGIN
       const double lden = + 0.5 * DEN(i-1, j  , k  )
                           + 0.5 * DEN(i  , j  , k  );
       UX(i, j, k) /= lden;
     END
-#endif
   }
   fluid_update_boundaries_ux(domain, &fluid->ux);
   return 0;

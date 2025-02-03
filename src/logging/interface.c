@@ -22,33 +22,17 @@ int logging_check_vof(
   sdecomp.get_comm_cart(domain->info, &comm_cart);
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * jdxf = domain->jdxf;
   const double * jdxc = domain->jdxc;
   const double * hxxf = domain->hxxf;
   const double hy = domain->hy;
-#if NDIMS == 3
   const double hz = domain->hz;
-#endif
   const double * vof = interface->vof.data;
   double min = 1.;
   double max = 0.;
   double sums[3] = {0.};
   // check volume conservation
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
-      const double ds = JDXC(i  );
-      const double lvof = VOF(i, j);
-      min = fmin(min, lvof);
-      max = fmax(max, lvof);
-      sums[0] += lvof * ds;
-      sums[1] +=        ds;
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -61,18 +45,7 @@ int logging_check_vof(
       }
     }
   }
-#endif
   // surface area, x face
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize + 1; i++){
-      const double vof_xm = VOF(i-1, j  );
-      const double vof_xp = VOF(i  , j  );
-      const double ds = JDXF(i  ) / HXXF(i  );
-      sums[2] += fabs(vof_xp - vof_xm) * ds;
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize + 1; i++){
@@ -83,18 +56,7 @@ int logging_check_vof(
       }
     }
   }
-#endif
   // surface area, y face
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
-      const double vof_ym = VOF(i  , j-1);
-      const double vof_yp = VOF(i  , j  );
-      const double ds = JDXC(i  ) / hy;
-      sums[2] += fabs(vof_yp - vof_ym) * ds;
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -105,9 +67,7 @@ int logging_check_vof(
       }
     }
   }
-#endif
   // surface area, z face
-#if NDIMS == 3
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -118,7 +78,6 @@ int logging_check_vof(
       }
     }
   }
-#endif
   MPI_Allreduce(MPI_IN_PLACE, &min, 1, MPI_DOUBLE, MPI_MIN, comm_cart);
   MPI_Allreduce(MPI_IN_PLACE, &max, 1, MPI_DOUBLE, MPI_MAX, comm_cart);
   MPI_Allreduce(MPI_IN_PLACE, sums, 3, MPI_DOUBLE, MPI_SUM, comm_cart);

@@ -14,17 +14,13 @@ typedef struct {
   array_t vof;
   array_t ifrcx;
   array_t ifrcy;
-#if NDIMS == 3
   array_t ifrcz;
-#endif
   array_t dvof;
   array_t normal;
   array_t curv;
   array_t fluxx;
   array_t fluxy;
-#if NDIMS == 3
   array_t fluxz;
-#endif
   array_t src[2];
   double We;
 } interface_t;

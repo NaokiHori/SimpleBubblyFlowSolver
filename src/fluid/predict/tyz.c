@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include <mpi.h>
 #include "domain.h"
 #include "fluid.h"
@@ -27,7 +26,7 @@ int compute_tyz(
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
-        // tyz at cell corner | 11
+        // tyz at cell corner
         const double vis_uy = + 0.5 * VISUY(i  , j  , k-1)
                               + 0.5 * VISUY(i  , j  , k  );
         const double vis_uz = + 0.5 * VISUZ(i  , j-1, k  )
@@ -54,4 +53,3 @@ int compute_tyz(
   }
   return 0;
 }
-#endif

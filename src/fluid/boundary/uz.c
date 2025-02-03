@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include <assert.h>
 #include <mpi.h>
 #include "param.h"
@@ -49,4 +48,3 @@ int fluid_update_boundaries_uz(
   }
   return 0;
 }
-#endif

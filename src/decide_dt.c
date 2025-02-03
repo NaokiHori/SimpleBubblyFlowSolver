@@ -11,9 +11,7 @@
 #include "interface.h"
 #include "array_macros/fluid/ux.h"
 #include "array_macros/fluid/uy.h"
-#if NDIMS == 3
 #include "array_macros/fluid/uz.h"
-#endif
 #include "array_macros/domain/hxxf.h"
 
 static const double pi = 3.1415926535897932384626433832;
@@ -43,32 +41,17 @@ static int decide_dt_adv(
   sdecomp.get_comm_cart(domain->info, &comm_cart);
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict hxxf = domain->hxxf;
   const double hy = domain->hy;
-#if NDIMS == 3
   const double hz = domain->hz;
-#endif
   const double * restrict ux = fluid->ux.data;
   const double * restrict uy = fluid->uy.data;
-#if NDIMS == 3
   const double * restrict uz = fluid->uz.data;
-#endif
   // sufficiently small number to avoid zero division
   const double small = 1.e-8;
   *dt = dt_max;
   // compute grid-size over velocity in x
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 2; i <= isize; i++){
-      const double hx = HXXF(i  );
-      const double vel = fabs(UX(i, j)) + small;
-      *dt = fmin(*dt, hx / vel);
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 2; i <= isize; i++){
@@ -78,16 +61,7 @@ static int decide_dt_adv(
       }
     }
   }
-#endif
   // compute grid-size over velocity in y
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
-      const double vel = fabs(UY(i, j)) + small;
-      *dt = fmin(*dt, hy / vel);
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -96,9 +70,7 @@ static int decide_dt_adv(
       }
     }
   }
-#endif
   // compute grid-size over velocity in z
-#if NDIMS == 3
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -107,7 +79,6 @@ static int decide_dt_adv(
       }
     }
   }
-#endif
   // unify result, multiply safety factor
   MPI_Allreduce(MPI_IN_PLACE, dt, 1, MPI_DOUBLE, MPI_MIN, comm_cart);
   *dt *= coef_dt_adv;
@@ -131,9 +102,7 @@ static int decide_dt_dif(
   const int isize = domain->mysizes[0];
   const double * restrict hxxf = domain->hxxf;
   const double hy = domain->hy;
-#if NDIMS == 3
   const double hz = domain->hz;
-#endif
   double grid_sizes[NDIMS] = {0.};
   // find minimum grid size in x direction
   grid_sizes[0] = DBL_MAX;
@@ -142,9 +111,7 @@ static int decide_dt_dif(
     grid_sizes[0] = fmin(grid_sizes[0], hx);
   }
   grid_sizes[1] = hy;
-#if NDIMS == 3
   grid_sizes[2] = hz;
-#endif
   // compute diffusive constraints
   for(int dim = 0; dim < NDIMS; dim++){
     dt[dim] = fmin(1., denr / visr) / diffusivity * 0.5 / NDIMS * pow(grid_sizes[dim], 2.);
@@ -163,9 +130,7 @@ static int decide_dt_int(
   const int isize = domain->mysizes[0];
   const double * restrict hxxf = domain->hxxf;
   const double hy = domain->hy;
-#if NDIMS == 3
   const double hz = domain->hz;
-#endif
   double grid_sizes[NDIMS] = {0.};
   // find minimum grid size in x direction
   grid_sizes[0] = DBL_MAX;
@@ -174,9 +139,7 @@ static int decide_dt_int(
     grid_sizes[0] = fmin(grid_sizes[0], hx);
   }
   grid_sizes[1] = hy;
-#if NDIMS == 3
   grid_sizes[2] = hz;
-#endif
   // compute interfacial constraints
   *dt = dt_max;
   for(int dim = 0; dim < NDIMS; dim++){
@@ -220,9 +183,7 @@ int decide_dt(
   // diffusion, momentum
   *dt = fmin(*dt, dt_dif[0]);
   *dt = fmin(*dt, dt_dif[1]);
-#if NDIMS == 3
   *dt = fmin(*dt, dt_dif[2]);
-#endif
   // surface tension
   *dt = fmin(*dt, dt_int[0]);
   return 0;

@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include <mpi.h>
 #include "domain.h"
 #include "fluid.h"
@@ -28,7 +27,7 @@ int compute_txz(
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize + 1; i++){
-        // txz at cell corner | 12
+        // txz at cell corner
         const double vis_ux = + 0.5 * VISUX(i  , j  , k-1)
                               + 0.5 * VISUX(i  , j  , k  );
         const double vis_uz = + 0.5 * VISUZ(i-1, j  , k  )
@@ -56,4 +55,3 @@ int compute_txz(
   }
   return 0;
 }
-#endif

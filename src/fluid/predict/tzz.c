@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include <mpi.h>
 #include "domain.h"
 #include "fluid.h"
@@ -22,7 +21,7 @@ int compute_tzz(
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
-        // tzz at cell center | 6
+        // tzz at cell center
         const double vis_uz = + 0.5 * VISUZ(i  , j  , k  )
                               + 0.5 * VISUZ(i  , j  , k+1);
         const double duz = - UZ(i  , j  , k  )
@@ -44,4 +43,3 @@ int compute_tzz(
   }
   return 0;
 }
-#endif

@@ -8,9 +8,7 @@
 #include "array_macros/domain/jdxc.h"
 #include "array_macros/fluid/ux.h"
 #include "array_macros/fluid/uy.h"
-#if NDIMS == 3
 #include "array_macros/fluid/uz.h"
-#endif
 #include "internal.h"
 
 /**
@@ -34,48 +32,20 @@ int logging_check_divergence(
   sdecomp.get_comm_cart(domain->info, &comm_cart);
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict hxxf = domain->hxxf;
   const double * restrict jdxf = domain->jdxf;
   const double * restrict jdxc = domain->jdxc;
   const double hy = domain->hy;
-#if NDIMS == 3
   const double hz = domain->hz;
-#endif
   const double * restrict ux = fluid->ux.data;
   const double * restrict uy = fluid->uy.data;
-#if NDIMS == 3
   const double * restrict uz = fluid->uz.data;
-#endif
   double divmax = 0.;
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
-      // compute local divergence | 13
-      const double hx_xm = HXXF(i  );
-      const double hx_xp = HXXF(i+1);
-      const double jd_xm = JDXF(i  );
-      const double jd_x0 = JDXC(i  );
-      const double jd_xp = JDXF(i+1);
-      const double ux_xm = UX(i  , j  );
-      const double ux_xp = UX(i+1, j  );
-      const double uy_ym = UY(i  , j  );
-      const double uy_yp = UY(i  , j+1);
-      const double div = 1. / jd_x0 * (
-          - jd_xm / hx_xm * ux_xm + jd_xp / hx_xp * ux_xp
-          - jd_x0 / hy    * uy_ym + jd_x0 / hy    * uy_yp
-      );
-      // check maximum
-      divmax = fmax(divmax, fabs(div));
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
-        // compute local divergence | 16
+        // compute local divergence
         const double hx_xm = HXXF(i  );
         const double hx_xp = HXXF(i+1);
         const double jd_xm = JDXF(i  );
@@ -97,7 +67,6 @@ int logging_check_divergence(
       }
     }
   }
-#endif
   // collect information among all processes
   const void * sendbuf = root == myrank ? MPI_IN_PLACE : &divmax;
   void * recvbuf = &divmax;
