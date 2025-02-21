@@ -24,7 +24,7 @@ Metric
 For simplicity and generality, the governing equations are written in a general rectilinear coordinate system :math:`\gcs^i` with normalised Cartesian components :math:`u_i`.
 :math:`h_{\gcs^i}` denote scale factors and its product is the Jacobian determinant :math:`J` due to the orthogonality.
 
-See `e.g. this <https://naokihori.github.io/OrthogonalNS/index.html>`_ for the derivations.
+See `e.g. this <https://naokihori.github.io/SimpleTCSolver/appendix/main.html>`_ for the derivations.
 
 **********************
 Non-dimensionalisation
